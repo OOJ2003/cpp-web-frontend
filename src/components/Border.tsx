@@ -1,6 +1,8 @@
 import { Chess } from "../utils/Types"
 import { useEffect, useState } from "react"
+
 import ChessCell from "./ChessCell"
+import Socket from "../utils/Socket"
 
 const chessIconSets = [
   {
@@ -74,7 +76,7 @@ const chessIconSets = [
   {
     black: "🎱",
     white: "🏀",
-  }
+  },
 ]
 
 function Border() {
@@ -93,27 +95,24 @@ function Border() {
       const newBoard = [...board]
       newBoard[index] = Chess.black
 
+      handleSocket(aiWin, newBoard)
+
       setBoard(newBoard)
 
       if (win === null) {
-        console.log(newBoard)
-        fetch("/api", {
-          method: "POST",
-          body: JSON.stringify({
-            aiWin: aiWin,
-            data: newBoard,
-          }),
+        handleSocket(aiWin, newBoard).then((data) => {
+          console.log("here is socket")
+          console.log(data)
+          setBoard(data)
         })
-          .then((response) => response.json()) // 解析响应数据为JSON格式
-          .then((data) => {
-            console.log("响应数据:", data)
-            const some = data.data as Array<Chess>
-            console.log(some)
-
-            setBoard(some)
-          })
       }
     }
+  }
+
+  const handleSocket = (ai: boolean, data: Array<Chess>) => {
+    console.log(`from handleSocket: ${ai} ${data}`)
+    console.log("here is socket function")
+    return Socket(ai, data)
   }
 
   const checkWinner = () => {
